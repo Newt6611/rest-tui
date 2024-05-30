@@ -4,35 +4,37 @@ import (
 	"os"
 	"strings"
 
-	"github.com/charmbracelet/bubbles/textarea"
+	"github.com/Newt6611/rest-tui/ui"
+	"github.com/Newt6611/rest-tui/ui/key"
+	"github.com/charmbracelet/bubbles/cursor"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/x/term"
 )
 
+const Name string = "UrlPanel"
+
 type Model struct {
-	style     lipgloss.Style
-	textInput textinput.Model
-	method    string
+	shortcutModel shortcutModel
+	textInput     textinput.Model
+	width         int
+	method        string // Http method
+	focused       bool
 }
 
 func New(widthInPercent float32) Model {
-	return Model{
-		style:     newDefaultStyle(widthInPercent),
-		textInput: newTextInput(),
-		method:    "GET",
-	}
-}
-
-func newDefaultStyle(widthInPercent float32) lipgloss.Style {
 	terminalWidth, _, _ := term.GetSize(os.Stdout.Fd())
 	width := int(float32(terminalWidth) * widthInPercent)
 
-	return lipgloss.NewStyle().
-		Border(lipgloss.RoundedBorder()).
-		Align(lipgloss.Left).
-		Width(width)
+	model := Model{
+		width:     width,
+		textInput: newTextInput(),
+		method:    "GET",
+	}
+
+	model.shortcutModel = newShortcutModel()
+	return model
 }
 
 func newTextInput() textinput.Model {
@@ -44,7 +46,7 @@ func newTextInput() textinput.Model {
 }
 
 func (m Model) Init() tea.Cmd {
-	return tea.Batch(textarea.Blink)
+	return nil
 }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -54,24 +56,58 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
+		case key.Question:
+			m.shortcutModel.visible = true
 		}
 	}
-	m.textInput, cmd = m.textInput.Update(msg)
-	cmds = append(cmds, cmd)
+
+	if m.focused && !m.ShowHelpPanel() {
+		m.textInput, cmd = m.textInput.Update(msg)
+		cmds = append(cmds, cmd)
+	}
+
+	if m.ShowHelpPanel() {
+		var mm tea.Model
+		mm, cmd = m.shortcutModel.Update(msg)
+		cmds = append(cmds, cmd)
+		m.shortcutModel = mm.(shortcutModel)
+		// Update current selected method from shortcut model
+		m.method = m.shortcutModel.getSelectedMethod()
+	}
 	return m, tea.Batch(cmds...)
 }
 
 func (m Model) View() string {
-	terminalWidth, _, _ := term.GetSize(os.Stdout.Fd())
-	width := m.style.GetWidth()
+	terminalWidth, _ := ui.GetTerminalSize()
 
-	oneSidePadding := (terminalWidth - width) / 2
+	oneSidePadding := (terminalWidth - m.width) / 2
 
-	return lipgloss.JoinHorizontal(lipgloss.Bottom,
-		strings.Repeat(" ", oneSidePadding),
-		m.style.Render(m.method, m.textInput.View()),
-		strings.Repeat(" ", oneSidePadding),
-	)
+	styledOutput := ui.GetStyle(m.focused).
+		Width(m.width).
+		Render(m.method, m.textInput.View())
+
+	if !m.shortcutModel.visible {
+		return lipgloss.JoinHorizontal(lipgloss.Bottom,
+			strings.Repeat(" ", oneSidePadding),
+			styledOutput,
+			strings.Repeat(" ", oneSidePadding))
+	} else {
+		return m.shortcutModel.View()
+	}
+}
+
+func (m Model) ShowHelpPanel() bool {
+	return m.shortcutModel.visible
+}
+
+func (m Model) SetFocuse(b bool) ui.Model {
+	m.focused = b
+	if m.focused {
+		m.textInput.Cursor.SetMode(cursor.CursorBlink)
+	} else {
+		m.textInput.Cursor.SetMode(cursor.CursorHide)
+	}
+	return m
 }
 
 func caculateWidth(args ...string) int {

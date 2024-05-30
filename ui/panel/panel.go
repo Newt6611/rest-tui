@@ -4,6 +4,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/Newt6611/rest-tui/ui"
 	"github.com/Newt6611/rest-tui/ui/key"
 	"github.com/Newt6611/rest-tui/ui/response"
 	"github.com/Newt6611/rest-tui/ui/url"
@@ -12,60 +13,91 @@ import (
 	"github.com/charmbracelet/x/term"
 )
 
-type PanelModel struct {
-	title         string
-	urlModel      url.Model
-	responseModel response.Model
+type Model struct {
+	title        string
+	subModels    []ui.Model
+	focusedIndex int // Current Focused Panel Index
 }
 
-func New() *PanelModel {
+func New() *Model {
 	urlModel := url.New(0.5)
+	{
+		m := urlModel.SetFocuse(true)
+		urlModel = m.(url.Model)
+	}
 	responseModel := response.New(0.5, 0.5)
+	
+	subModels := []ui.Model {
+		urlModel,
+		responseModel,
+	}
 
-	return &PanelModel{
-		title:         "REST UI",
-		urlModel:      urlModel,
-		responseModel: responseModel,
+	return &Model{
+		title:        "REST UI",
+		subModels:    subModels,
+		focusedIndex: 0,
 	}
 }
 
-func (m PanelModel) Init() tea.Cmd {
+func (m Model) Init() tea.Cmd {
 	return nil
 }
 
-func (m PanelModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	var cmd tea.Cmd
+func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
-		case key.CtrlC, key.Q:
+		case key.CtrlC, key.Esc:
 			return m, tea.Quit
+		case key.Quit:
+			if m.focusedIndex != int(ui.UrlIndex) {
+				return m, tea.Quit
+			}
+		case key.Tab:
+			model := m.subModels[m.focusedIndex]
+			if !model.ShowHelpPanel() {
+				m.updateFocusedModel()
+			}
 		}
 	}
 
-	mo, cmd := m.urlModel.Update(msg)
-	m.urlModel = mo.(url.Model)
-	cmds = append(cmds, cmd)
-
-	mo, cmd = m.responseModel.Update(msg)
-	m.responseModel = mo.(response.Model)
+	mo, cmd := m.subModels[m.focusedIndex].Update(msg)
+	m.subModels[m.focusedIndex] = mo.(ui.Model)
 	cmds = append(cmds, cmd)
 
 	return m, tea.Batch(cmds...)
 }
 
-func (m PanelModel) View() string {
+func (m Model) View() string {
 	terminalWidth, _, _ := term.GetSize(os.Stdout.Fd())
 	width := len(m.title)
 	oneSidePadding := (terminalWidth - width) / 2
 
-	return lipgloss.JoinVertical(lipgloss.Center,
-		strings.Repeat(" ", oneSidePadding),
-		m.title,
-		strings.Repeat(" ", oneSidePadding),
-		m.urlModel.View(),
-		m.responseModel.View(),
-	)
+	model := m.subModels[m.focusedIndex]
+	if model.ShowHelpPanel() {
+		return model.View()
+	} else {
+		return lipgloss.JoinVertical(lipgloss.Center,
+			strings.Repeat(" ", oneSidePadding),
+			m.title,
+			strings.Repeat(" ", oneSidePadding),
+			m.subModels[ui.UrlIndex].View(),
+			m.subModels[ui.ResponseIndex].View(),
+		)
+	}
+}
+
+func (m *Model) updateFocusedModel() {
+	currentModel := m.subModels[m.focusedIndex]
+	m.subModels[m.focusedIndex] = currentModel.SetFocuse(false)
+
+	m.focusedIndex++
+	if m.focusedIndex >= len(m.subModels) {
+		m.focusedIndex = 0
+	}
+	nextModel := m.subModels[m.focusedIndex]
+
+	m.subModels[m.focusedIndex] = nextModel.SetFocuse(true)
 }
