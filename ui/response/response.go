@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/Newt6611/rest-tui/ui"
+	"github.com/charmbracelet/bubbles/help"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/x/term"
@@ -15,10 +16,11 @@ const (
 )
 
 type Model struct {
-	focused bool
-	width   int
-	height  int
-	showHelp bool
+	focused        bool
+	width          int
+	height         int
+	showHelp       bool
+	responseString string
 }
 
 func New(widthInPercent, heightInPercent float32) Model {
@@ -27,8 +29,8 @@ func New(widthInPercent, heightInPercent float32) Model {
 	height := int(float32(terminalHeight) * heightInPercent)
 
 	return Model{
-		width:  width,
-		height: height,
+		width:    width,
+		height:   height,
 		showHelp: false,
 	}
 }
@@ -53,10 +55,11 @@ func (m Model) View() string {
 	terminalWidth, _ := ui.GetTerminalSize()
 	oneSidePadding := (terminalWidth - m.width) / 2
 
+	m.responseString = "Hi, this is a rest tui tool."
 	styledOutput := ui.GetStyle(m.focused).
 		Width(m.width).
 		Height(m.height).
-		Render("{\n	\"foor\":\"bar\"\n}")
+		Render(m.responseString)
 
 	return lipgloss.JoinHorizontal(lipgloss.Bottom,
 		strings.Repeat(" ", oneSidePadding),
@@ -72,4 +75,8 @@ func (m Model) ShowHelpPanel() bool {
 func (m Model) SetFocuse(b bool) ui.Model {
 	m.focused = b
 	return m
+}
+
+func (m Model) GetHelpKeyMap() help.KeyMap {
+	return helpKeys
 }

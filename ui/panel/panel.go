@@ -8,12 +8,14 @@ import (
 	"github.com/Newt6611/rest-tui/ui/key"
 	"github.com/Newt6611/rest-tui/ui/response"
 	"github.com/Newt6611/rest-tui/ui/url"
+	"github.com/charmbracelet/bubbles/help"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/x/term"
 )
 
 type Model struct {
+	helpView     help.Model
 	title        string
 	subModels    []ui.Model
 	focusedIndex int // Current Focused Panel Index
@@ -26,8 +28,8 @@ func New() *Model {
 		urlModel = m.(url.Model)
 	}
 	responseModel := response.New(0.5, 0.5)
-	
-	subModels := []ui.Model {
+
+	subModels := []ui.Model{
 		urlModel,
 		responseModel,
 	}
@@ -36,6 +38,7 @@ func New() *Model {
 		title:        "REST UI",
 		subModels:    subModels,
 		focusedIndex: 0,
+		helpView: help.New(),
 	}
 }
 
@@ -47,6 +50,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		m.helpView.Width = msg.Width
+
 	case tea.KeyMsg:
 		switch msg.String() {
 		case key.CtrlC, key.Esc:
@@ -85,6 +91,7 @@ func (m Model) View() string {
 			strings.Repeat(" ", oneSidePadding),
 			m.subModels[ui.UrlIndex].View(),
 			m.subModels[ui.ResponseIndex].View(),
+			m.helpView.View(m.subModels[m.focusedIndex].GetHelpKeyMap()),
 		)
 	}
 }

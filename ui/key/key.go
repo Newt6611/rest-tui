@@ -7,6 +7,7 @@ const (
 	Tab      string = "tab"
 	Question string = "?"
 	Enter    string = "enter"
+	CtrlP    string = "ctrl+p"
 
 	// Movement
 	H string = "h"

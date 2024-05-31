@@ -6,7 +6,9 @@ import (
 
 	"github.com/Newt6611/rest-tui/ui"
 	"github.com/Newt6611/rest-tui/ui/key"
+	"github.com/atotto/clipboard"
 	"github.com/charmbracelet/bubbles/cursor"
+	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -18,9 +20,10 @@ const Name string = "UrlPanel"
 type Model struct {
 	shortcutModel shortcutModel
 	textInput     textinput.Model
-	width         int
-	method        string // Http method
-	focused       bool
+
+	width   int
+	method  string // Http method
+	focused bool
 }
 
 func New(widthInPercent float32) Model {
@@ -58,6 +61,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case key.Question:
 			m.shortcutModel.visible = true
+
+		case key.CtrlP: // Paste from clipboard
+			clipboardText, _ := clipboard.ReadAll()
+			preText := m.textInput.Value()
+			newText := preText + clipboardText
+			m.textInput.SetValue(newText)
+			m.textInput.SetCursor(len(newText))
 		}
 	}
 
@@ -108,6 +118,10 @@ func (m Model) SetFocuse(b bool) ui.Model {
 		m.textInput.Cursor.SetMode(cursor.CursorHide)
 	}
 	return m
+}
+
+func (m Model) GetHelpKeyMap() help.KeyMap {
+	return helpKeys
 }
 
 func caculateWidth(args ...string) int {

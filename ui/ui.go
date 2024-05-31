@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"github.com/charmbracelet/bubbles/help"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
@@ -17,6 +18,7 @@ type Model interface {
 
 	ShowHelpPanel() bool
 	SetFocuse(bool) Model
+	GetHelpKeyMap() help.KeyMap
 }
 
 func GetStyle(focus bool) lipgloss.Style {
