@@ -2,7 +2,6 @@ package panel
 
 import (
 	"os"
-	"strings"
 
 	"github.com/Newt6611/rest-tui/ui"
 	"github.com/Newt6611/rest-tui/ui/key"
@@ -77,22 +76,19 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) View() string {
-	terminalWidth, _, _ := term.GetSize(os.Stdout.Fd())
-	width := len(m.title)
-	oneSidePadding := (terminalWidth - width) / 2
+	terminalWidth, terminalHeight, _ := term.GetSize(os.Stdout.Fd())
 
 	model := m.subModels[m.focusedIndex]
 	if model.ShowHelpPanel() {
 		return model.View()
 	} else {
-		return lipgloss.JoinVertical(lipgloss.Center,
-			strings.Repeat(" ", oneSidePadding),
+		styledOutput := lipgloss.JoinVertical(lipgloss.Center,
 			m.title,
-			strings.Repeat(" ", oneSidePadding),
 			m.subModels[ui.UrlIndex].View(),
 			m.subModels[ui.ResponseIndex].View(),
 			m.helpView.View(m.subModels[m.focusedIndex].GetHelpKeyMap()),
 		)
+		return lipgloss.Place(terminalWidth, terminalHeight, lipgloss.Center, lipgloss.Center, styledOutput)
 	}
 }
 

@@ -2,14 +2,12 @@ package response
 
 import (
 	"os"
-	"strings"
 
 	"github.com/Newt6611/rest-tui/ui"
 	"github.com/Newt6611/rest-tui/ui/key"
 	"github.com/atotto/clipboard"
 	"github.com/charmbracelet/bubbles/help"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/x/term"
 )
 
@@ -57,19 +55,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) View() string {
-	terminalWidth, _ := ui.GetTerminalSize()
-	oneSidePadding := (terminalWidth - m.width) / 2
-
 	styledOutput := ui.GetStyle(m.focused).
 		Width(m.width).
 		Height(m.height).
 		Render(m.responseString)
-
-	return lipgloss.JoinHorizontal(lipgloss.Bottom,
-		strings.Repeat(" ", oneSidePadding),
-		styledOutput,
-		strings.Repeat(" ", oneSidePadding),
-	)
+	return styledOutput
 }
 
 func (m Model) ShowHelpPanel() bool {
