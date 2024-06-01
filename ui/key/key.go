@@ -1,19 +1,21 @@
 package key
 
 const (
-	CtrlC    string = "ctrl+c"
-	Esc      string = "esc"
-	Quit     string = "q"
-	Tab      string = "tab"
-	Question string = "?"
-	Enter    string = "enter"
-	CtrlP    string = "ctrl+p"
+	CtrlC      string = "ctrl+c"
+	CtrlShiftC string = "ctrl+C"
+	CtrlP      string = "ctrl+p"
+	Esc        string = "esc"
+	Quit       string = "q"
+	Tab        string = "tab"
+	Question   string = "?"
+	Enter      string = "enter"
 
 	// Movement
 	H string = "h"
 	J string = "j"
 	K string = "k"
 	L string = "l"
+	C string = "c"
 
 	// Http Methods
 	Get     string = "g"

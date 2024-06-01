@@ -6,7 +6,6 @@ import (
 
 	"github.com/Newt6611/rest-tui/ui"
 	"github.com/Newt6611/rest-tui/ui/key"
-	"github.com/atotto/clipboard"
 	"github.com/charmbracelet/bubbles/cursor"
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/textinput"
@@ -61,13 +60,15 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case key.Question:
 			m.shortcutModel.visible = true
-
-		case key.CtrlP: // Paste from clipboard
-			clipboardText, _ := clipboard.ReadAll()
-			preText := m.textInput.Value()
-			newText := preText + clipboardText
-			m.textInput.SetValue(newText)
-			m.textInput.SetCursor(len(newText))
+		// case key.CtrlP: // Paste from clipboard
+		// 	clipboardText, _ := clipboard.ReadAll()
+		// 	preText := m.textInput.Value()
+		// 	newText := preText + clipboardText
+		// 	m.textInput.SetValue(newText)
+		// 	m.textInput.SetCursor(len(newText))
+		// case key.CtrlShiftC: // Copy from the url text input
+		// 	text := m.textInput.Value()
+		// 	clipboard.WriteAll(text)
 		}
 	}
 

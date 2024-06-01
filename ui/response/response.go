@@ -5,6 +5,8 @@ import (
 	"strings"
 
 	"github.com/Newt6611/rest-tui/ui"
+	"github.com/Newt6611/rest-tui/ui/key"
+	"github.com/atotto/clipboard"
 	"github.com/charmbracelet/bubbles/help"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -29,9 +31,10 @@ func New(widthInPercent, heightInPercent float32) Model {
 	height := int(float32(terminalHeight) * heightInPercent)
 
 	return Model{
-		width:    width,
-		height:   height,
-		showHelp: false,
+		width:          width,
+		height:         height,
+		showHelp:       false,
+		responseString: "Hi, this is a rest tui tool.",
 	}
 }
 
@@ -46,6 +49,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
+		case key.C:
+			clipboard.WriteAll(m.responseString)
 		}
 	}
 	return m, cmd
@@ -55,7 +60,6 @@ func (m Model) View() string {
 	terminalWidth, _ := ui.GetTerminalSize()
 	oneSidePadding := (terminalWidth - m.width) / 2
 
-	m.responseString = "Hi, this is a rest tui tool."
 	styledOutput := ui.GetStyle(m.focused).
 		Width(m.width).
 		Height(m.height).
