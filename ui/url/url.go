@@ -2,16 +2,13 @@ package url
 
 import (
 	"os"
-	"strings"
 
 	"github.com/Newt6611/rest-tui/ui"
 	"github.com/Newt6611/rest-tui/ui/key"
-	"github.com/atotto/clipboard"
 	"github.com/charmbracelet/bubbles/cursor"
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/x/term"
 )
 
@@ -61,13 +58,15 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case key.Question:
 			m.shortcutModel.visible = true
-
-		case key.CtrlP: // Paste from clipboard
-			clipboardText, _ := clipboard.ReadAll()
-			preText := m.textInput.Value()
-			newText := preText + clipboardText
-			m.textInput.SetValue(newText)
-			m.textInput.SetCursor(len(newText))
+		// case key.CtrlP: // Paste from clipboard
+		// 	clipboardText, _ := clipboard.ReadAll()
+		// 	preText := m.textInput.Value()
+		// 	newText := preText + clipboardText
+		// 	m.textInput.SetValue(newText)
+		// 	m.textInput.SetCursor(len(newText))
+		// case key.CtrlShiftC: // Copy from the url text input
+		// 	text := m.textInput.Value()
+		// 	clipboard.WriteAll(text)
 		}
 	}
 
@@ -88,19 +87,20 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) View() string {
-	terminalWidth, _ := ui.GetTerminalSize()
-
-	oneSidePadding := (terminalWidth - m.width) / 2
+	// terminalWidth, _ := ui.GetTerminalSize()
+	//
+	// oneSidePadding := (terminalWidth - m.width) / 2
 
 	styledOutput := ui.GetStyle(m.focused).
 		Width(m.width).
 		Render(m.method, m.textInput.View())
 
 	if !m.shortcutModel.visible {
-		return lipgloss.JoinHorizontal(lipgloss.Bottom,
-			strings.Repeat(" ", oneSidePadding),
-			styledOutput,
-			strings.Repeat(" ", oneSidePadding))
+		return styledOutput
+		// return lipgloss.JoinHorizontal(lipgloss.Bottom,
+		// 	strings.Repeat(" ", oneSidePadding),
+		// 	styledOutput,
+		// 	strings.Repeat(" ", oneSidePadding))
 	} else {
 		return m.shortcutModel.View()
 	}
