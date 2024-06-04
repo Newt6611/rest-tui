@@ -8,8 +8,6 @@ import (
 )
 
 func main() {
-	//
-	//2
 	mainWindow := panel.New()
 	p := tea.NewProgram(*mainWindow, tea.WithAltScreen())
 	if _, err := p.Run(); err != nil {
