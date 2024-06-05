@@ -1,6 +1,8 @@
 package ui
 
 import (
+	"time"
+
 	"github.com/charmbracelet/bubbles/help"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -40,4 +42,16 @@ func FocusedStyle() lipgloss.Style {
 	return lipgloss.NewStyle().
 		Border(lipgloss.ThickBorder()).
 		BorderForeground(lipgloss.Color("#fff72b"))
+}
+
+
+var CopyEffectTime time.Duration = time.Millisecond * 100
+
+type CopyEffect bool
+func StartCopyEffect(t time.Duration) tea.Cmd {
+	return func() tea.Msg {
+		c := time.NewTimer(t)
+		<-c.C
+		return CopyEffect(true)
+	}
 }

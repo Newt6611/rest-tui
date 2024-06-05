@@ -8,6 +8,7 @@ import (
 	"github.com/atotto/clipboard"
 	"github.com/charmbracelet/bubbles/help"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/x/term"
 )
 
@@ -21,6 +22,7 @@ type Model struct {
 	height         int
 	showHelp       bool
 	responseString string
+	bgColor        lipgloss.TerminalColor
 }
 
 func New(widthInPercent, heightInPercent float32) Model {
@@ -41,7 +43,7 @@ func (m Model) Init() tea.Cmd {
 }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	// var cmds []tea.Cmd
+	var cmds []tea.Cmd
 	var cmd tea.Cmd
 
 	switch msg := msg.(type) {
@@ -49,16 +51,30 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case key.C:
 			clipboard.WriteAll(m.responseString)
+			m.bgColor = lipgloss.Color("#FFF")
+
+			cmd = ui.StartCopyEffect(ui.CopyEffectTime)
+			cmds = append(cmds, cmd)
 		}
+
+	case ui.CopyEffect:
+		// When true, means timer end, then we can set background color back to default
+		b := bool(msg)
+		if b {
+			m.bgColor = ui.GetStyle(m.focused).GetBackground()
+		}
+
 	}
-	return m, cmd
+	return m, tea.Batch(cmds...)
 }
 
 func (m Model) View() string {
 	styledOutput := ui.GetStyle(m.focused).
 		Width(m.width).
 		Height(m.height).
+		Background(m.bgColor).
 		Render(m.responseString)
+
 	return styledOutput
 }
 

@@ -87,20 +87,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) View() string {
-	// terminalWidth, _ := ui.GetTerminalSize()
-	//
-	// oneSidePadding := (terminalWidth - m.width) / 2
-
 	styledOutput := ui.GetStyle(m.focused).
 		Width(m.width).
 		Render(m.method, m.textInput.View())
 
 	if !m.shortcutModel.visible {
 		return styledOutput
-		// return lipgloss.JoinHorizontal(lipgloss.Bottom,
-		// 	strings.Repeat(" ", oneSidePadding),
-		// 	styledOutput,
-		// 	strings.Repeat(" ", oneSidePadding))
 	} else {
 		return m.shortcutModel.View()
 	}
